@@ -1,4 +1,5 @@
 -- 20260204233453_0017_orders_order_number.sql
+-- Adds human-friendly immutable order_number like: MD-2026-000042
 
 -- 1) Sequência para números incrementais
 create sequence if not exists public.orders_order_no_seq;
