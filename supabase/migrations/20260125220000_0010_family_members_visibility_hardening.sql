@@ -18,8 +18,7 @@ using (
   -- Membro não-owner vê apenas sua própria linha
   family_members.profile_id = auth.uid()
 );
-
 -- Nota: As policies de INSERT e DELETE permanecem inalteradas:
 -- - INSERT: apenas owner pode adicionar membros (já implementado)
 -- - DELETE: apenas owner pode remover membros (já implementado)
--- - A policy family_groups_client_select também permanece inalterada (membro ainda pode ver o grupo que participa)
+-- - A policy family_groups_client_select também permanece inalterada (membro ainda pode ver o grupo que participa);

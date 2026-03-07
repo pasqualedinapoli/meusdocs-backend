@@ -9,7 +9,6 @@ create table if not exists public.family_groups (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 -- Family Members: membros de um grupo familiar
 create table if not exists public.family_members (
   id uuid primary key default gen_random_uuid(),
@@ -19,22 +18,18 @@ create table if not exists public.family_members (
   created_at timestamptz not null default now(),
   unique(family_group_id, profile_id)
 );
-
 -- Índices
 create index if not exists idx_family_groups_owner_id on public.family_groups(owner_id);
 create index if not exists idx_family_members_family_group_id on public.family_members(family_group_id);
 create index if not exists idx_family_members_profile_id on public.family_members(profile_id);
-
 -- Updated_at trigger para family_groups
 drop trigger if exists trg_family_groups_updated_at on public.family_groups;
 create trigger trg_family_groups_updated_at
 before update on public.family_groups
 for each row execute function public.set_updated_at();
-
 -- RLS
 alter table public.family_groups enable row level security;
 alter table public.family_members enable row level security;
-
 -- Policies: CLIENTE
 -- Cliente vê/edita apenas seus próprios grupos
 drop policy if exists "family_groups_client_select" on public.family_groups;
@@ -49,20 +44,17 @@ using (
       and fm.profile_id = auth.uid()
   )
 );
-
 drop policy if exists "family_groups_client_insert" on public.family_groups;
 create policy "family_groups_client_insert"
 on public.family_groups for insert
 to authenticated
 with check (owner_id = auth.uid());
-
 drop policy if exists "family_groups_client_update" on public.family_groups;
 create policy "family_groups_client_update"
 on public.family_groups for update
 to authenticated
 using (owner_id = auth.uid())
 with check (owner_id = auth.uid());
-
 -- Cliente vê/edita apenas membros dos seus grupos
 drop policy if exists "family_members_client_select" on public.family_members;
 create policy "family_members_client_select"
@@ -80,7 +72,6 @@ using (
         ))
   )
 );
-
 drop policy if exists "family_members_client_insert" on public.family_members;
 create policy "family_members_client_insert"
 on public.family_members for insert
@@ -92,7 +83,6 @@ with check (
       and fg.owner_id = auth.uid()
   )
 );
-
 drop policy if exists "family_members_client_delete" on public.family_members;
 create policy "family_members_client_delete"
 on public.family_members for delete
@@ -104,7 +94,6 @@ using (
       and fg.owner_id = auth.uid()
   )
 );
-
 -- Policies: OPERADOR
 -- Operador pode ler todos os grupos e membros
 drop policy if exists "family_groups_operator_select" on public.family_groups;
@@ -118,7 +107,6 @@ using (
       and p.role = 'operator'
   )
 );
-
 drop policy if exists "family_members_operator_select" on public.family_members;
 create policy "family_members_operator_select"
 on public.family_members for select

@@ -14,7 +14,6 @@ begin
     );
   end if;
 end$$;
-
 -- Status de pedidos
 do $$
 begin
@@ -29,7 +28,6 @@ begin
     );
   end if;
 end$$;
-
 -- Status de tarefas
 do $$
 begin
@@ -43,7 +41,6 @@ begin
     );
   end if;
 end$$;
-
 -- Prioridade de tarefas
 do $$
 begin
@@ -56,7 +53,6 @@ begin
     );
   end if;
 end$$;
-
 -- Status de jobs (background)
 do $$
 begin
@@ -70,7 +66,6 @@ begin
     );
   end if;
 end$$;
-
 -- Tipo de evento para auditoria
 do $$
 begin

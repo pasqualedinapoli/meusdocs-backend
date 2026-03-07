@@ -11,7 +11,6 @@ create table if not exists public.conversations (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 -- Messages: mensagens dentro de uma conversa
 create table if not exists public.messages (
   id uuid primary key default gen_random_uuid(),
@@ -22,21 +21,19 @@ create table if not exists public.messages (
   metadata jsonb,
   created_at timestamptz not null default now()
 );
-
 -- Índices
 create index if not exists idx_conversations_owner_id on public.conversations(owner_id);
 create index if not exists idx_conversations_status on public.conversations(status);
-create index if not exists idx_conversations_partner_id on public.conversations(partner_id); -- Para V2
+create index if not exists idx_conversations_partner_id on public.conversations(partner_id);
+-- Para V2
 create index if not exists idx_messages_conversation_id on public.messages(conversation_id);
 create index if not exists idx_messages_sender_id on public.messages(sender_id);
 create index if not exists idx_messages_created_at on public.messages(created_at);
-
 -- Updated_at trigger para conversations
 drop trigger if exists trg_conversations_updated_at on public.conversations;
 create trigger trg_conversations_updated_at
 before update on public.conversations
 for each row execute function public.set_updated_at();
-
 -- Função para atualizar last_message_at automaticamente
 create or replace function public.update_conversation_last_message()
 returns trigger as $$
@@ -47,16 +44,13 @@ begin
   return new;
 end;
 $$ language plpgsql;
-
 drop trigger if exists trg_messages_update_conversation on public.messages;
 create trigger trg_messages_update_conversation
 after insert on public.messages
 for each row execute function public.update_conversation_last_message();
-
 -- RLS
 alter table public.conversations enable row level security;
 alter table public.messages enable row level security;
-
 -- Policies: CLIENTE
 -- Cliente vê/edita apenas suas próprias conversas
 drop policy if exists "conversations_client_select" on public.conversations;
@@ -64,20 +58,17 @@ create policy "conversations_client_select"
 on public.conversations for select
 to authenticated
 using (owner_id = auth.uid());
-
 drop policy if exists "conversations_client_insert" on public.conversations;
 create policy "conversations_client_insert"
 on public.conversations for insert
 to authenticated
 with check (owner_id = auth.uid());
-
 drop policy if exists "conversations_client_update" on public.conversations;
 create policy "conversations_client_update"
 on public.conversations for update
 to authenticated
 using (owner_id = auth.uid())
 with check (owner_id = auth.uid());
-
 -- Cliente vê apenas mensagens não-internas das suas conversas
 drop policy if exists "messages_client_select" on public.messages;
 create policy "messages_client_select"
@@ -91,7 +82,6 @@ using (
   )
   and not is_internal
 );
-
 drop policy if exists "messages_client_insert" on public.messages;
 create policy "messages_client_insert"
 on public.messages for insert
@@ -105,7 +95,6 @@ with check (
   and sender_id = auth.uid()
   and not is_internal
 );
-
 -- Policies: OPERADOR
 -- Operador pode ler todas as conversas
 drop policy if exists "conversations_operator_select" on public.conversations;
@@ -119,7 +108,6 @@ using (
       and p.role = 'operator'
   )
 );
-
 -- Operador pode atualizar status da conversa
 drop policy if exists "conversations_operator_update" on public.conversations;
 create policy "conversations_operator_update"
@@ -141,7 +129,6 @@ with check (
   -- Note: operador não pode alterar owner_id, partner_id
   -- Apenas status, subject são permitidos
 );
-
 -- Operador pode ler todas as mensagens (incluindo internas)
 drop policy if exists "messages_operator_select" on public.messages;
 create policy "messages_operator_select"
@@ -154,7 +141,6 @@ using (
       and p.role = 'operator'
   )
 );
-
 -- Operador pode inserir mensagens (incluindo internas)
 drop policy if exists "messages_operator_insert" on public.messages;
 create policy "messages_operator_insert"

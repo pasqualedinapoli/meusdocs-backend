@@ -27,7 +27,6 @@ as $$
       and owner_id = auth.uid()
   );
 $$;
-
 -- Helper: verifica se auth.uid() é membro do grupo (anti-loop)
 create or replace function public.is_family_group_member(p_group_id uuid)
 returns boolean
@@ -43,7 +42,6 @@ as $$
       and profile_id = auth.uid()
   );
 $$;
-
 -- Helper: verifica se auth.uid() pode acessar o grupo (owner OU member)
 create or replace function public.can_access_family_group(p_group_id uuid)
 returns boolean
@@ -55,12 +53,10 @@ as $$
   select public.is_family_group_owner(p_group_id)
       or public.is_family_group_member(p_group_id);
 $$;
-
 -- Garantir permissões de execução
 grant execute on function public.is_family_group_owner(uuid) to authenticated;
 grant execute on function public.is_family_group_member(uuid) to authenticated;
 grant execute on function public.can_access_family_group(uuid) to authenticated;
-
 -- ============================================================================
 -- 2. DROP DE TODAS AS POLICIES EXISTENTES (idempotente)
 -- ============================================================================
@@ -79,7 +75,6 @@ begin
 exception
   when others then null; -- Ignorar erros (policy pode não existir)
 end $$;
-
 -- Dropar policies de family_members (idempotente)
 do $$
 begin
@@ -94,7 +89,6 @@ begin
 exception
   when others then null; -- Ignorar erros (policy pode não existir)
 end $$;
-
 -- ============================================================================
 -- 3. RECRIAR POLICIES ANTI-LOOP (usando funções helper)
 -- ============================================================================
@@ -102,7 +96,6 @@ end $$;
 -- Garantir RLS habilitado (idempotente)
 alter table public.family_groups enable row level security;
 alter table public.family_members enable row level security;
-
 -- ============================================================================
 -- POLICIES: family_groups
 -- ============================================================================
@@ -115,32 +108,27 @@ using (
   owner_id = auth.uid()  -- Owner direto (sem JOIN)
   or public.can_access_family_group(id)  -- Member via função helper (anti-loop)
 );
-
 -- INSERT: Apenas owner pode criar grupo (owner_id = auth.uid())
 create policy "family_groups_client_insert"
 on public.family_groups for insert
 to authenticated
 with check (owner_id = auth.uid());
-
 -- UPDATE: Apenas owner pode atualizar seu grupo
 create policy "family_groups_client_update"
 on public.family_groups for update
 to authenticated
 using (owner_id = auth.uid())
 with check (owner_id = auth.uid());
-
 -- DELETE: Apenas owner pode deletar seu grupo
 create policy "family_groups_client_delete"
 on public.family_groups for delete
 to authenticated
 using (owner_id = auth.uid());
-
 -- OPERADOR: pode ler todos os grupos (usa is_operator() de 0013)
 create policy "family_groups_operator_select"
 on public.family_groups for select
 to authenticated
 using (public.is_operator());
-
 -- ============================================================================
 -- POLICIES: family_members
 -- ============================================================================
@@ -153,7 +141,6 @@ using (
   public.is_family_group_owner(family_group_id)  -- Owner via função helper (anti-loop)
   or profile_id = auth.uid()  -- Member vê apenas sua linha (sem JOIN)
 );
-
 -- INSERT: Apenas owner pode adicionar membros (anti-loop)
 create policy "family_members_client_insert"
 on public.family_members for insert
@@ -161,7 +148,6 @@ to authenticated
 with check (
   public.is_family_group_owner(family_group_id)  -- Owner via função helper (anti-loop)
 );
-
 -- DELETE: Apenas owner pode remover membros (anti-loop)
 create policy "family_members_client_delete"
 on public.family_members for delete
@@ -169,13 +155,11 @@ to authenticated
 using (
   public.is_family_group_owner(family_group_id)  -- Owner via função helper (anti-loop)
 );
-
 -- OPERADOR: pode ler todos os membros (usa is_operator() de 0013)
 create policy "family_members_operator_select"
 on public.family_members for select
 to authenticated
 using (public.is_operator());
-
 -- ============================================================================
 -- 4. QUERIES DE VERIFICAÇÃO (comentadas - executar manualmente após migration)
 -- ============================================================================
@@ -201,4 +185,4 @@ using (public.is_operator());
 -- Testar função helper (substituir <group_id> por UUID real):
 -- SELECT public.is_family_group_owner('<group_id>'::uuid);
 -- SELECT public.is_family_group_member('<group_id>'::uuid);
--- SELECT public.can_access_family_group('<group_id>'::uuid);
+-- SELECT public.can_access_family_group('<group_id>'::uuid);;

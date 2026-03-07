@@ -15,10 +15,8 @@ as $$
       and role = 'operator'
   );
 $$;
-
 -- opcional (recomendado): garantir que authenticated pode executar
 grant execute on function public.is_operator() to authenticated;
-
 -- 2) Recriar policy de operador em profiles SEM consultar profiles diretamente
 drop policy if exists "profiles_operator_read_all" on public.profiles;
 create policy "profiles_operator_read_all"

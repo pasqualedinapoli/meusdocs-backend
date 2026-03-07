@@ -13,7 +13,6 @@ create table if not exists public.reminders (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 -- Tasks: tarefas internas (operador)
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),
@@ -31,7 +30,6 @@ create table if not exists public.tasks (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 -- Índices
 create index if not exists idx_reminders_owner_id on public.reminders(owner_id);
 create index if not exists idx_reminders_document_id on public.reminders(document_id);
@@ -41,22 +39,18 @@ create index if not exists idx_tasks_assigned_to on public.tasks(assigned_to);
 create index if not exists idx_tasks_document_id on public.tasks(document_id);
 create index if not exists idx_tasks_status on public.tasks(status);
 create index if not exists idx_tasks_priority on public.tasks(priority);
-
 -- Updated_at triggers
 drop trigger if exists trg_reminders_updated_at on public.reminders;
 create trigger trg_reminders_updated_at
 before update on public.reminders
 for each row execute function public.set_updated_at();
-
 drop trigger if exists trg_tasks_updated_at on public.tasks;
 create trigger trg_tasks_updated_at
 before update on public.tasks
 for each row execute function public.set_updated_at();
-
 -- RLS
 alter table public.reminders enable row level security;
 alter table public.tasks enable row level security;
-
 -- Policies: CLIENTE
 -- Cliente vê/edita apenas seus próprios lembretes
 drop policy if exists "reminders_client_select" on public.reminders;
@@ -64,33 +58,28 @@ create policy "reminders_client_select"
 on public.reminders for select
 to authenticated
 using (owner_id = auth.uid());
-
 drop policy if exists "reminders_client_insert" on public.reminders;
 create policy "reminders_client_insert"
 on public.reminders for insert
 to authenticated
 with check (owner_id = auth.uid());
-
 drop policy if exists "reminders_client_update" on public.reminders;
 create policy "reminders_client_update"
 on public.reminders for update
 to authenticated
 using (owner_id = auth.uid())
 with check (owner_id = auth.uid());
-
 drop policy if exists "reminders_client_delete" on public.reminders;
 create policy "reminders_client_delete"
 on public.reminders for delete
 to authenticated
 using (owner_id = auth.uid());
-
 -- Cliente vê apenas tarefas relacionadas a ele
 drop policy if exists "tasks_client_select" on public.tasks;
 create policy "tasks_client_select"
 on public.tasks for select
 to authenticated
 using (owner_id = auth.uid());
-
 -- Policies: OPERADOR
 -- Operador pode ler todas as tarefas
 drop policy if exists "tasks_operator_select" on public.tasks;
@@ -104,7 +93,6 @@ using (
       and p.role = 'operator'
   )
 );
-
 -- Operador pode inserir/atualizar tarefas
 drop policy if exists "tasks_operator_insert" on public.tasks;
 create policy "tasks_operator_insert"
@@ -117,7 +105,6 @@ with check (
       and p.role = 'operator'
   )
 );
-
 drop policy if exists "tasks_operator_update" on public.tasks;
 create policy "tasks_operator_update"
 on public.tasks for update
@@ -136,7 +123,6 @@ with check (
       and p.role = 'operator'
   )
 );
-
 -- Operador pode ler todos os lembretes (para contexto)
 drop policy if exists "reminders_operator_select" on public.reminders;
 create policy "reminders_operator_select"

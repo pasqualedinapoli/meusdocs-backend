@@ -9,7 +9,6 @@ returns boolean as $$
       and p.role = 'operator'
   );
 $$ language sql stable security invoker;
-
 -- Documents: operador não pode alterar owner_id, family_group_id, partner_id
 create or replace function public.guard_documents_operator_update()
 returns trigger as $$
@@ -26,12 +25,10 @@ begin
   return new;
 end;
 $$ language plpgsql security invoker;
-
 drop trigger if exists trg_guard_documents_operator_update on public.documents;
 create trigger trg_guard_documents_operator_update
 before update on public.documents
 for each row execute function public.guard_documents_operator_update();
-
 -- Orders: operador não pode alterar owner_id, partner_id, total_amount_cents
 create or replace function public.guard_orders_operator_update()
 returns trigger as $$
@@ -48,12 +45,10 @@ begin
   return new;
 end;
 $$ language plpgsql security invoker;
-
 drop trigger if exists trg_guard_orders_operator_update on public.orders;
 create trigger trg_guard_orders_operator_update
 before update on public.orders
 for each row execute function public.guard_orders_operator_update();
-
 -- Conversations: operador não pode alterar owner_id, partner_id
 create or replace function public.guard_conversations_operator_update()
 returns trigger as $$
@@ -69,7 +64,6 @@ begin
   return new;
 end;
 $$ language plpgsql security invoker;
-
 drop trigger if exists trg_guard_conversations_operator_update on public.conversations;
 create trigger trg_guard_conversations_operator_update
 before update on public.conversations

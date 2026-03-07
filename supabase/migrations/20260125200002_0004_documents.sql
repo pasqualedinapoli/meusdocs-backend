@@ -14,7 +14,6 @@ create table if not exists public.documents (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 -- Document Files: arquivos anexados aos documentos
 create table if not exists public.document_files (
   id uuid primary key default gen_random_uuid(),
@@ -26,25 +25,22 @@ create table if not exists public.document_files (
   uploaded_by uuid references public.profiles(id) on delete set null,
   created_at timestamptz not null default now()
 );
-
 -- Índices
 create index if not exists idx_documents_owner_id on public.documents(owner_id);
 create index if not exists idx_documents_family_group_id on public.documents(family_group_id);
 create index if not exists idx_documents_status on public.documents(status);
-create index if not exists idx_documents_partner_id on public.documents(partner_id); -- Para V2
+create index if not exists idx_documents_partner_id on public.documents(partner_id);
+-- Para V2
 create index if not exists idx_document_files_document_id on public.document_files(document_id);
 create index if not exists idx_document_files_uploaded_by on public.document_files(uploaded_by);
-
 -- Updated_at trigger para documents
 drop trigger if exists trg_documents_updated_at on public.documents;
 create trigger trg_documents_updated_at
 before update on public.documents
 for each row execute function public.set_updated_at();
-
 -- RLS
 alter table public.documents enable row level security;
 alter table public.document_files enable row level security;
-
 -- Policies: CLIENTE
 -- Cliente vê/edita apenas documentos próprios ou do seu family_group
 drop policy if exists "documents_client_select" on public.documents;
@@ -59,13 +55,11 @@ using (
       and fm.profile_id = auth.uid()
   ))
 );
-
 drop policy if exists "documents_client_insert" on public.documents;
 create policy "documents_client_insert"
 on public.documents for insert
 to authenticated
 with check (owner_id = auth.uid());
-
 drop policy if exists "documents_client_update" on public.documents;
 create policy "documents_client_update"
 on public.documents for update
@@ -86,7 +80,6 @@ with check (
       and fm.profile_id = auth.uid()
   ))
 );
-
 -- Cliente vê/insere arquivos apenas em documentos acessíveis
 drop policy if exists "document_files_client_select" on public.document_files;
 create policy "document_files_client_select"
@@ -104,7 +97,6 @@ using (
         )))
   )
 );
-
 drop policy if exists "document_files_client_insert" on public.document_files;
 create policy "document_files_client_insert"
 on public.document_files for insert
@@ -122,7 +114,6 @@ with check (
   )
   and uploaded_by = auth.uid()
 );
-
 drop policy if exists "document_files_client_delete" on public.document_files;
 create policy "document_files_client_delete"
 on public.document_files for delete
@@ -134,7 +125,6 @@ using (
       and d.owner_id = auth.uid()
   )
 );
-
 -- Policies: OPERADOR
 -- Operador pode ler todos os documentos e arquivos
 drop policy if exists "documents_operator_select" on public.documents;
@@ -148,7 +138,6 @@ using (
       and p.role = 'operator'
   )
 );
-
 -- Operador pode atualizar apenas campos não sensíveis (status, metadata)
 drop policy if exists "documents_operator_update" on public.documents;
 create policy "documents_operator_update"
@@ -170,7 +159,6 @@ with check (
   -- Note: operador não pode alterar owner_id, family_group_id, partner_id
   -- Apenas status, description, metadata são permitidos
 );
-
 drop policy if exists "document_files_operator_select" on public.document_files;
 create policy "document_files_operator_select"
 on public.document_files for select

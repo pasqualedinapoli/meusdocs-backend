@@ -16,7 +16,6 @@ create table if not exists public.jobs (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 -- Idempotency Keys: chaves para garantir idempotência de operações
 create table if not exists public.idempotency_keys (
   id uuid primary key default gen_random_uuid(),
@@ -27,7 +26,6 @@ create table if not exists public.idempotency_keys (
   expires_at timestamptz not null, -- Expiração da chave (ex: 24h)
   created_at timestamptz not null default now()
 );
-
 -- Event Log: log de auditoria de eventos
 create table if not exists public.event_log (
   id uuid primary key default gen_random_uuid(),
@@ -40,7 +38,6 @@ create table if not exists public.event_log (
   user_agent text,
   created_at timestamptz not null default now()
 );
-
 -- Índices
 create index if not exists idx_jobs_status on public.jobs(status);
 create index if not exists idx_jobs_job_type on public.jobs(job_type);
@@ -52,13 +49,11 @@ create index if not exists idx_event_log_resource_type on public.event_log(resou
 create index if not exists idx_event_log_resource_id on public.event_log(resource_id);
 create index if not exists idx_event_log_user_id on public.event_log(user_id);
 create index if not exists idx_event_log_created_at on public.event_log(created_at);
-
 -- Updated_at trigger para jobs
 drop trigger if exists trg_jobs_updated_at on public.jobs;
 create trigger trg_jobs_updated_at
 before update on public.jobs
 for each row execute function public.set_updated_at();
-
 -- Função helper para inserir eventos no log de auditoria
 create or replace function public.log_event(
   p_event_type event_type,
@@ -95,12 +90,10 @@ begin
   return v_event_id;
 end;
 $$ language plpgsql security definer;
-
 -- RLS
 alter table public.jobs enable row level security;
 alter table public.idempotency_keys enable row level security;
 alter table public.event_log enable row level security;
-
 -- Policies: CLIENTE
 -- Cliente não tem acesso direto a jobs, idempotency_keys e event_log
 -- (esses são gerenciados pelo sistema/operador)
@@ -118,7 +111,6 @@ using (
       and p.role = 'operator'
   )
 );
-
 -- Operador pode inserir/atualizar jobs
 drop policy if exists "jobs_operator_insert" on public.jobs;
 create policy "jobs_operator_insert"
@@ -131,7 +123,6 @@ with check (
       and p.role = 'operator'
   )
 );
-
 drop policy if exists "jobs_operator_update" on public.jobs;
 create policy "jobs_operator_update"
 on public.jobs for update
@@ -150,7 +141,6 @@ with check (
       and p.role = 'operator'
   )
 );
-
 -- Operador pode ler idempotency_keys (para debug)
 drop policy if exists "idempotency_keys_operator_select" on public.idempotency_keys;
 create policy "idempotency_keys_operator_select"
@@ -163,7 +153,6 @@ using (
       and p.role = 'operator'
   )
 );
-
 -- Operador pode ler event_log
 drop policy if exists "event_log_operator_select" on public.event_log;
 create policy "event_log_operator_select"
@@ -176,7 +165,6 @@ using (
       and p.role = 'operator'
   )
 );
-
 -- Service role pode inserir em event_log (via função helper)
 -- Nota: service_role bypassa RLS, então não precisa policy específica
--- A função log_event usa security definer para permitir inserção
+-- A função log_event usa security definer para permitir inserção;
